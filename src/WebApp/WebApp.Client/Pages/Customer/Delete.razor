@@ -1,0 +1,41 @@
+@using BlazorPlayground.Contracts
+@using BlazorPlayground.WebApp.Client.Services
+
+
+@inject ICustomerClient CustomerClient
+
+<ConfirmDialog Show="Show"
+               Title="Delete Customer"
+               Message="@Message"
+               ConfirmText="Delete"
+               CancelText="Cancel"
+               OnConfirmed="ConfirmDelete"
+               OnCanceled="Cancel" />
+
+@code {
+    [Parameter] public bool Show { get; set; }
+    [Parameter] public CustomerResource? Model { get; set; }
+
+    [Parameter] public EventCallback OnDeleted { get; set; }
+    [Parameter] public EventCallback OnCanceled { get; set; }
+
+    private string Message =>
+        Model is null
+            ? "Are you sure you want to delete this customer?"
+            : $"Are you sure you want to delete {Model.CompanyName ?? Model.ContactName ?? "this customer"}?";
+
+    private async Task ConfirmDelete()
+    {
+        if (Model is not null)
+        {
+            await CustomerClient.Delete(Model.Id);
+        }
+
+        await OnDeleted.InvokeAsync();
+    }
+
+    private async Task Cancel()
+    {
+        await OnCanceled.InvokeAsync();
+    }
+}

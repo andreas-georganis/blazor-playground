@@ -1,0 +1,42 @@
+@using BlazorPlayground.Contracts
+@using BlazorPlayground.WebApp.Client.Services
+
+
+@inject ICustomerClient CustomerClient
+
+@if (Model is not null)
+{
+    <Form Title="Edit Customer"
+          Model="Model"
+          OnValidSubmit="HandleSubmit"
+          OnCancel="OnCancel"></Form>
+}
+else
+{
+    <p>No customer selected.</p>
+}
+
+@code {
+    [Parameter] public CustomerResource? Model { get; set; }
+    [Parameter] public EventCallback<CustomerResource> OnUpdated { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private async Task HandleSubmit(CustomerResource customer)
+    {
+        if (customer.Id == Guid.Empty)
+        {
+            // optionally guard or treat as new
+            return;
+        }
+
+        var ok = await CustomerClient.Update(customer.Id, customer);
+        if (ok)
+        {
+            await OnUpdated.InvokeAsync(customer);
+        }
+        else
+        {
+            // handle error if needed
+        }
+    }
+}

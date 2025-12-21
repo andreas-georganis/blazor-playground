@@ -1,0 +1,141 @@
+@page "/customers"
+@attribute [Authorize]
+@*@attribute [StreamRendering]*@
+@rendermode InteractiveAuto
+
+@using BlazorPlayground.Contracts
+@using BlazorPlayground.WebApp.Client.Services
+@using Microsoft.AspNetCore.Authorization
+
+@inject ICustomerClient CustomerClient
+
+@if (_isLoading)
+{
+    <p>Loading...</p>
+}
+else
+{
+    @if (_isAdding)
+    {
+        <Add OnCreated="HandleCreated"
+                     OnCancel="CloseForm" />
+    }
+    else if (_isEditing)
+    {
+        <Edit Model="_editingCustomer"
+                      OnUpdated="HandleUpdated"
+                      OnCancel="CloseForm" />
+    }
+    else
+    {
+        <Grid Result="_customers"
+              OnAdd="ShowCreateForm"
+              OnEdit="ShowEditForm"
+              OnDelete="ConfirmDelete"
+              PageChanged="PagerPageChanged" />
+    }
+}
+
+<Delete Show="_showDelete"
+                Model="_customerToDelete"
+                OnDeleted="HandleDeleted"
+                OnCanceled="HandleCancelDelete" />
+
+@code {
+    private PagedResult<CustomerResource> _customers =
+        new([], 1, 10, 0);
+
+    private bool _isLoading = true;
+
+    private bool _isAdding;
+    private bool _isEditing;
+    private CustomerResource? _editingCustomer;
+
+    private bool _showDelete;
+    private CustomerResource? _customerToDelete;
+
+    private int _pageSize = 10;
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+    
+        if (!firstRender)
+            return;
+        await LoadPage(1);
+    }
+
+    private async Task LoadPage(int pageNumber)
+    {
+        _isLoading = true;
+
+        _customers = await CustomerClient.Get(pageNumber, _pageSize);
+
+        if (_customers.PageSize == 0)
+        {
+            _customers = new PagedResult<CustomerResource>(
+                _customers.Items,
+                pageNumber,
+                _pageSize,
+                _customers.TotalCount);
+        }
+
+        _isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task PagerPageChanged(int pageNumber)
+    {
+        await LoadPage(pageNumber);
+    }
+
+    private void ShowCreateForm()
+    {
+        _isAdding = true;
+        _isEditing = false;
+        _editingCustomer = null;
+    }
+
+    private void ShowEditForm(CustomerResource customer)
+    {
+        _editingCustomer = customer;
+        _isEditing = true;
+        _isAdding = false;
+    }
+
+    private void CloseForm()
+    {
+        _isAdding = false;
+        _isEditing = false;
+    }
+
+    private async Task HandleCreated(CustomerResource _)
+    {
+        CloseForm();
+        await LoadPage(_customers.PageIndex);
+    }
+
+    private async Task HandleUpdated(CustomerResource _)
+    {
+        CloseForm();
+        await LoadPage(_customers.PageIndex);
+    }
+
+    private void ConfirmDelete(CustomerResource customer)
+    {
+        _customerToDelete = customer;
+        _showDelete = true;
+    }
+
+    private async Task HandleDeleted()
+    {
+        _showDelete = false;
+        await LoadPage(_customers.PageIndex);
+    }
+
+    private void HandleCancelDelete()
+    {
+        _showDelete = false;
+    }
+}

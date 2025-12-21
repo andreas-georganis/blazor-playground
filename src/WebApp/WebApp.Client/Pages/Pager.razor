@@ -1,0 +1,54 @@
+@using BlazorPlayground.Contracts
+
+@if (Result is not null && Result.TotalPages > 1)
+{
+    <nav aria-label="Pagination">
+        <ul class="pagination">
+
+            <li class="page-item @(Result.PageIndex <= 1 ? "disabled" : "")">
+                <button class="page-link"
+                        @onclick="() => GoToPage(Result.PageIndex - 1)"
+                        disabled="@(Result.PageIndex <= 1)">
+                    Prev
+                </button>
+            </li>
+
+            @for (int i = 1; i <= Result.TotalPages; i++)
+            {
+                <li class="page-item @(i == Result.PageIndex ? "active" : "")">
+
+                    @{
+                        var i1 = i;
+                    }
+                    <button class="page-link"
+                            @onclick="() => GoToPage(i1)"
+                            disabled="@(i == Result.PageIndex)">
+                        @i
+                    </button>
+                </li>
+            }
+
+            <li class="page-item @(Result.PageIndex >= Result.TotalPages ? "disabled" : "")">
+                <button class="page-link"
+                        @onclick="() => GoToPage(Result.PageIndex+1)"
+                        disabled="@(Result.PageIndex >= Result.TotalPages)">
+                    Next
+                </button>
+            </li>
+
+        </ul>
+    </nav>
+}
+
+@code {
+    [Parameter] public PagedResult Result { get; set; } = default!;
+    [Parameter] public EventCallback<int> PageChanged { get; set; }
+
+    private async Task GoToPage(int page)
+    {
+        if (page < 1 || page > Result.TotalPages || page == Result.PageIndex)
+            return;
+
+        await PageChanged.InvokeAsync(page);
+    }
+}

@@ -1,0 +1,9 @@
+services:
+  dex:
+    container_name: dex-mock
+    image: dexidp/dex:latest
+    ports:
+      - "5556:5556"
+    volumes:
+      - ./config.yaml:/etc/dex/config.yaml:ro
+    command: ["dex", "serve", "/etc/dex/config.yaml"]

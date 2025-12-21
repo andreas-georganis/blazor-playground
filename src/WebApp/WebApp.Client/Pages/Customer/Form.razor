@@ -1,0 +1,96 @@
+@using BlazorPlayground.Contracts
+
+<EditForm Model="_editingCustomer" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <h4>@Title</h4>
+
+    <div class="mb-3">
+        <label class="form-label">Company Name</label>
+        <InputText class="form-control" @bind-Value="_editingCustomer.CompanyName" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Contact Name</label>
+        <InputText class="form-control" @bind-Value="_editingCustomer.ContactName" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Address</label>
+        <InputText class="form-control" @bind-Value="_editingCustomer.Address" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">City</label>
+        <InputText class="form-control" @bind-Value="_editingCustomer.City" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Region</label>
+        <InputText class="form-control" @bind-Value="_editingCustomer.Region" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Postal Code</label>
+        <InputText class="form-control" @bind-Value="_editingCustomer.PostalCode" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Country</label>
+        <InputText class="form-control" @bind-Value="_editingCustomer.Country" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Phone</label>
+        <InputText class="form-control" @bind-Value="_editingCustomer.Phone" />
+    </div>
+
+    <div class="mt-3">
+        <button type="submit" class="btn btn-primary me-2">Save</button>
+        <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter] public CustomerResource? Model { get; set; }
+    [Parameter] public string Title { get; set; } = "Customer";
+    [Parameter] public EventCallback<CustomerResource> OnValidSubmit { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private CustomerResource _editingCustomer = new();
+
+    protected override void OnParametersSet()
+    {
+        if (Model is null)
+        {
+            _editingCustomer = new CustomerResource();
+        }
+        else
+        {
+            // Shallow copy to avoid mutating parent model directly
+            _editingCustomer = new CustomerResource
+            {
+                Id = Model.Id,
+                CompanyName = Model.CompanyName,
+                ContactName = Model.ContactName,
+                Address = Model.Address,
+                City = Model.City,
+                Region = Model.Region,
+                PostalCode = Model.PostalCode,
+                Country = Model.Country,
+                Phone = Model.Phone
+            };
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        await OnValidSubmit.InvokeAsync(_editingCustomer);
+    }
+
+    private async Task Cancel()
+    {
+        await OnCancel.InvokeAsync();
+    }
+}
