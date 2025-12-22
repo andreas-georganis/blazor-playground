@@ -20,7 +20,7 @@ public sealed class TestAuthHandler : AuthenticationHandler<AuthenticationScheme
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, "test-user-1"),
-            new Claim("scope", "Weather.Get"),
+            //new Claim("scope", "customers.read customers.write"),
             new Claim(ClaimTypes.Name, "Integration Tester")
         };
 

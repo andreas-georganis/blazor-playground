@@ -12,7 +12,11 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddMigration<AppDbContext>();
 
-builder.Services.AddAuthentication()
+builder.Services.AddAuthentication(o=>
+    {
+        o.DefaultAuthenticateScheme = "Bearer";
+        o.DefaultChallengeScheme = "Bearer";
+    })
     .AddJwtBearer("Bearer", jwtOptions =>
     {
         jwtOptions.RequireHttpsMetadata = false;
@@ -22,28 +26,14 @@ builder.Services.AddAuthentication()
         jwtOptions.Audience = "blazor-dev";
     });
 
-builder.Services.AddAuthorization();
-
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("Customers.Read", policy =>
+    /*options.AddPolicy("Customers.Read", policy =>
         policy.RequireAssertion(ctx => HasScope(ctx.User, "customers.read")));
 
     options.AddPolicy("Customers.Write", policy =>
-        policy.RequireAssertion(ctx => HasScope(ctx.User, "customers.write")));
+        policy.RequireAssertion(ctx => HasScope(ctx.User, "customers.write")));*/
 });
-
-static bool HasScope(ClaimsPrincipal user, string scope)
-{
-    // Common claim types:
-    // - "scope" (space-separated)
-    // - "scp"   (Azure-style, also space-separated)
-    var scopes =
-        user.FindAll("scope").SelectMany(c => c.Value.Split(' ', StringSplitOptions.RemoveEmptyEntries))
-            .Concat(user.FindAll("scp").SelectMany(c => c.Value.Split(' ', StringSplitOptions.RemoveEmptyEntries)));
-
-    return scopes.Contains(scope, StringComparer.OrdinalIgnoreCase);
-}
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -72,3 +62,16 @@ app.UseHttpsRedirection();
 app.MapCustomerEndpoints();
 
 app.Run();
+return;
+
+static bool HasScope(ClaimsPrincipal user, string scope)
+{
+    // Common claim types:
+    // - "scope" (space-separated)
+    // - "scp"   (Azure-style, also space-separated)
+    var scopes =
+        user.FindAll("scope").SelectMany(c => c.Value.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+            .Concat(user.FindAll("scp").SelectMany(c => c.Value.Split(' ', StringSplitOptions.RemoveEmptyEntries)));
+
+    return scopes.Contains(scope, StringComparer.OrdinalIgnoreCase);
+}

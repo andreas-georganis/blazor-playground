@@ -19,7 +19,7 @@ public static class CustomerEndpoints
                 .ToPagedAsync(page, pageSize);
             
             return TypedResults.Ok(customers);
-        });
+        });//.RequireAuthorization("Customers.Read");
 
         group.MapGet("/{id:guid}", async Task<Results<Ok<CustomerResource>, NotFound>> (Guid id, AppDbContext db) =>
         {
@@ -28,7 +28,7 @@ public static class CustomerEndpoints
             return customer is null
                 ? TypedResults.NotFound()
                 : TypedResults.Ok(customer.ToResource());
-        });
+        });//.RequireAuthorization("Customers.Read");
 
         group.MapPost("/", async Task<Created<CustomerResource>> (CustomerData customer, AppDbContext db) =>
         {
@@ -51,7 +51,7 @@ public static class CustomerEndpoints
             var resource = newCustomer.ToResource();
 
             return TypedResults.Created($"/api/customers/{newCustomer.Id}", resource);
-        });
+        });//.RequireAuthorization("Customers.Write");
         
         group.MapPut("/{id:guid}", async Task<Results<NoContent, NotFound>> (Guid id, CustomerData customer, AppDbContext db) =>
         {
@@ -65,7 +65,7 @@ public static class CustomerEndpoints
             await db.SaveChangesAsync();
             
             return TypedResults.NoContent();
-        });
+        });//.RequireAuthorization("Customers.Write");
         
         group.MapDelete("/{id:guid}", async Task<Results<NoContent, NotFound>> (Guid id, AppDbContext db) =>
         {
@@ -79,7 +79,7 @@ public static class CustomerEndpoints
             await db.SaveChangesAsync();
             
             return TypedResults.NoContent();
-        });
+        });//.RequireAuthorization("Customers.Write");
 
         return app;
     }
