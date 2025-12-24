@@ -5,10 +5,19 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+builder.Services.AddDbContextFactory<AppDbContext>(options =>
+{
+    options.UseSqlServer(connectionString);
+});
+
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
-});
+    options.UseSqlServer(connectionString);
+}, 
+    contextLifetime: ServiceLifetime.Scoped, 
+    optionsLifetime: ServiceLifetime.Singleton);
 
 builder.Services.AddMigration<AppDbContext>();
 
